@@ -12,6 +12,15 @@ type CloudflareEnv = {
   ADMIN_SESSION_SECRET?: string;
 };
 
+/**
+ * Used only when no ADMIN_PASSWORD is configured, so the panel works the moment
+ * the site is deployed. It is committed to a public repository and is therefore
+ * public knowledge: set a real ADMIN_PASSWORD in the host's environment before
+ * this site matters. Doing so also re-keys the session cookie signature, since
+ * ADMIN_SESSION_SECRET falls back to the password.
+ */
+export const DEMO_ADMIN_PASSWORD = 'YUMJEFFSEAFOOD';
+
 let cloudflareEnv: CloudflareEnv | null | undefined;
 
 /** Present only when running on Cloudflare Workers; null everywhere else. */
@@ -30,7 +39,16 @@ export async function getSecret(
   name: 'ADMIN_PASSWORD' | 'ADMIN_SESSION_SECRET',
 ): Promise<string | null> {
   const env = await loadCloudflareEnv();
-  return env?.[name] ?? process.env[name] ?? null;
+  const configured = env?.[name] ?? process.env[name] ?? null;
+  if (configured) return configured;
+
+  return name === 'ADMIN_PASSWORD' ? DEMO_ADMIN_PASSWORD : null;
+}
+
+/** True while the panel is still protected by the public demo password. */
+export async function usingDemoPassword(): Promise<boolean> {
+  const env = await loadCloudflareEnv();
+  return !(env?.ADMIN_PASSWORD ?? process.env.ADMIN_PASSWORD);
 }
 
 let driver: Driver | null | undefined;
@@ -121,14 +139,14 @@ export async function getFile(key: string) {
 export type StorageStatus = {
   ready: boolean;
   driver: Driver['name'] | null;
-  password: boolean;
+  demoPassword: boolean;
 };
 
 export async function getStorageStatus(): Promise<StorageStatus> {
-  const [active, password] = await Promise.all([pickDriver(), getSecret('ADMIN_PASSWORD')]);
+  const [active, demoPassword] = await Promise.all([pickDriver(), usingDemoPassword()]);
   return {
     ready: Boolean(active),
     driver: active?.name ?? null,
-    password: Boolean(password),
+    demoPassword,
   };
 }

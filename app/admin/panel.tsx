@@ -85,6 +85,21 @@ export default function Panel({
           </div>
         ) : null}
 
+        {storage.demoPassword ? (
+          <div className="admin-banner">
+            <h3>This panel is using the demo password</h3>
+            <p>
+              The demo password is part of the site&apos;s public source code, so anyone can look it
+              up and edit these pages. Fine while you are trying things out — not fine once the site
+              is live.
+            </p>
+            <p>
+              To fix it, set an <code>ADMIN_PASSWORD</code> environment variable on the hosting
+              project and redeploy. This notice disappears once you do.
+            </p>
+          </div>
+        ) : null}
+
         {active === 'menus' ? (
           <MenusPanel menus={menus} canUpload={storage.ready} />
         ) : active === 'jobs' ? (

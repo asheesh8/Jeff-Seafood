@@ -19,21 +19,35 @@ Workers**. Same code, same data shape; only the storage driver differs.
    `BLOB_READ_WRITE_TOKEN` automatically. This holds both the content document
    and the uploaded menu files.
 
-3. **Add the admin password.** Project → Settings → Environment Variables:
+3. **Redeploy** so the Blob token is picked up.
 
-   | Name | Value |
-   | --- | --- |
-   | `ADMIN_PASSWORD` | a long passphrase |
-   | `ADMIN_SESSION_SECRET` | any long random string (optional) |
+Until step 2 is done the public site still renders perfectly on its built-in
+defaults, and `/admin` explains what is missing. Nothing breaks in the meantime.
 
-   Skipping the session secret is fine — cookies are then signed with the
-   password instead, which means changing the password signs everyone out.
+## The admin password
 
-4. **Redeploy** so the new variables are picked up.
+Out of the box the panel accepts a **demo password: `YUMJEFFSEAFOOD`**, so it is
+usable the moment the site deploys, with nothing to configure.
 
-Until steps 2 and 3 are done the public site still renders perfectly on its
-built-in defaults, and `/admin` explains what is missing. Nothing breaks in the
-meantime.
+That password is in this repository's source, and the repository is public — so
+it is public knowledge, and anyone who finds `/admin` can edit the site. It also
+signs the session cookie, so knowing it is enough to forge a session. Fine for
+showing the panel to the client; not fine once the site is real.
+
+**To replace it**, add an environment variable on the hosting project and
+redeploy:
+
+| Name | Value |
+| --- | --- |
+| `ADMIN_PASSWORD` | a long passphrase |
+| `ADMIN_SESSION_SECRET` | any long random string (optional) |
+
+Setting `ADMIN_PASSWORD` takes over completely: the demo password stops working,
+every existing session is invalidated (the cookie signing key changes with it),
+and the warning banner inside the panel disappears. No code change needed.
+
+Skipping the session secret is fine — cookies are then signed with the password
+instead, which is why changing the password signs everyone out.
 
 ## How the content layer works
 
@@ -94,7 +108,7 @@ mattered, but it is the trade-off against a real database.
 ## Deploying to Cloudflare (still supported)
 
 `npm run build:cf` / `npm run dev:cf` use vinext. `.openai/hosting.json` names
-the `MEDIA` R2 bucket; provision it and set the same two secrets with
+the `MEDIA` R2 bucket; provision it and set the real password with
 `npx wrangler secret put ADMIN_PASSWORD`. D1 is no longer used.
 
 ## Job applications
@@ -145,8 +159,8 @@ Those are external identifiers, not branding — editing them breaks the links.
 - `/admin` is `noindex, nofollow`, but it is not hidden — anyone who finds the
   URL sees the password prompt.
 - There is no rate limiting on sign-in, only a 400 ms delay on a wrong password.
-  Make the password long. If this needs hardening, a counter keyed by IP in the
-  same document is the natural next step.
+  Make the real password long. If this needs hardening, a counter keyed by IP in
+  the same document is the natural next step.
 - Deleting a menu removes it from the document but leaves its file in storage.
   Harmless, but a periodic sweep would be tidy.
 - Vercel Blob is a public store: anyone with the URL of an uploaded menu can
