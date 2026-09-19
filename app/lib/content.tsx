@@ -1,4 +1,4 @@
-import { getReadyDb } from './db';
+import { readStore } from './store';
 import {
   DEFAULT_CONTENT,
   DEFAULT_JOBS,
@@ -15,97 +15,35 @@ export type Content = Record<string, string>;
  * copy instead of leaving a hole in the page.
  */
 export async function loadContent(): Promise<Content> {
-  const db = await getReadyDb();
-  if (!db) return { ...DEFAULT_CONTENT };
+  const { content } = await readStore();
 
-  try {
-    const { results } = await db
-      .prepare('SELECT key, value FROM content')
-      .all<{ key: string; value: string }>();
-
-    const merged = { ...DEFAULT_CONTENT };
-    for (const row of results ?? []) {
-      // Toggles are meaningful when set to "false"; text fields are not.
-      if (row.value !== '' || !(row.key in DEFAULT_CONTENT)) merged[row.key] = row.value;
-    }
-    return merged;
-  } catch {
-    return { ...DEFAULT_CONTENT };
+  const merged = { ...DEFAULT_CONTENT };
+  for (const [key, value] of Object.entries(content)) {
+    // Toggles are meaningful when saved as "false"; empty text is not, and
+    // falls back to the default so clearing a field restores the original copy.
+    if (value !== '' || !(key in DEFAULT_CONTENT)) merged[key] = value;
   }
+  return merged;
 }
 
 export async function loadMenus({ includeDrafts = false } = {}): Promise<MenuItem[]> {
-  const db = await getReadyDb();
-  if (!db) return DEFAULT_MENUS;
+  const { menus } = await readStore();
 
-  try {
-    const { results } = await db
-      .prepare('SELECT * FROM menus ORDER BY sort_order ASC, title ASC')
-      .all<Record<string, unknown>>();
+  // An untouched store means the owners have not set menus up yet, so the
+  // original six categories still show on the site.
+  if (menus.length === 0) return includeDrafts ? [] : DEFAULT_MENUS;
 
-    const rows = results ?? [];
-    // An untouched database means the owners have not set menus up yet, so the
-    // original six categories still show.
-    if (rows.length === 0) return includeDrafts ? [] : DEFAULT_MENUS;
-
-    const menus = rows.map(rowToMenu);
-    return includeDrafts ? menus : menus.filter((menu) => menu.status === 'published');
-  } catch {
-    return DEFAULT_MENUS;
-  }
-}
-
-function rowToMenu(row: Record<string, unknown>): MenuItem {
-  return {
-    id: String(row.id),
-    title: String(row.title ?? ''),
-    blurb: String(row.blurb ?? ''),
-    fileKey: (row.file_key as string | null) || null,
-    fileType: (row.file_type as string | null) || null,
-    linkUrl: (row.link_url as string | null) || null,
-    sortOrder: Number(row.sort_order ?? 0),
-    status: row.status === 'draft' ? 'draft' : 'published',
-  };
+  const sorted = [...menus].sort((a, b) => a.sortOrder - b.sortOrder);
+  return includeDrafts ? sorted : sorted.filter((menu) => menu.status === 'published');
 }
 
 export async function loadJobs({ includeDrafts = false } = {}): Promise<JobItem[]> {
-  const db = await getReadyDb();
-  if (!db) return DEFAULT_JOBS;
+  const { jobs } = await readStore();
 
-  try {
-    const { results } = await db
-      .prepare('SELECT * FROM jobs ORDER BY sort_order ASC, title ASC')
-      .all<Record<string, unknown>>();
+  if (jobs.length === 0) return includeDrafts ? [] : DEFAULT_JOBS;
 
-    const rows = results ?? [];
-    if (rows.length === 0) return includeDrafts ? [] : DEFAULT_JOBS;
-
-    const jobs = rows.map(rowToJob);
-    return includeDrafts ? jobs : jobs.filter((job) => job.status === 'published');
-  } catch {
-    return DEFAULT_JOBS;
-  }
-}
-
-function rowToJob(row: Record<string, unknown>): JobItem {
-  let duties: string[] = [];
-  try {
-    const parsed: unknown = JSON.parse(String(row.duties ?? '[]'));
-    if (Array.isArray(parsed)) duties = parsed.map(String);
-  } catch {
-    duties = [];
-  }
-
-  return {
-    id: String(row.id),
-    title: String(row.title ?? ''),
-    schedule: String(row.schedule ?? ''),
-    experience: String(row.experience ?? ''),
-    duties,
-    applyUrl: String(row.apply_url ?? ''),
-    sortOrder: Number(row.sort_order ?? 0),
-    status: row.status === 'draft' ? 'draft' : 'published',
-  };
+  const sorted = [...jobs].sort((a, b) => a.sortOrder - b.sortOrder);
+  return includeDrafts ? sorted : sorted.filter((job) => job.status === 'published');
 }
 
 // --- shaping helpers used by the page templates -----------------------------
@@ -143,7 +81,9 @@ export function telHref(content: Content): string {
 
 /** Where a menu row points: its uploaded file, its own link, or the shared menus page. */
 export function menuHref(menu: MenuItem, content: Content): string | null {
-  if (menu.fileKey) return `/uploads/${menu.fileKey}`;
+  // fileUrl is absolute where the host serves blobs itself, and a /uploads/…
+  // path where the file comes back through this app.
+  if (menu.fileUrl) return menu.fileUrl;
   if (menu.linkUrl) return menu.linkUrl;
   return content['site.menus_url'] || null;
 }

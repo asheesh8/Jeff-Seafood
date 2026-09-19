@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { getSecret } from './db';
+import { getSecret } from './store';
 
 const COOKIE = 'jeffs_admin';
 const SESSION_HOURS = 12;

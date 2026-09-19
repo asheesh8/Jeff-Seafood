@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signOutAction } from './actions';
 import type { Content } from '../lib/content';
 import type { GroupDef, JobItem, MenuItem } from '../lib/defaults';
-import type { StorageStatus } from '../lib/db';
+import type { StorageStatus } from '../lib/store';
 import ContentForm from './content-form';
 import MenusPanel from './menus-panel';
 import JobsPanel from './jobs-panel';
@@ -69,24 +69,24 @@ export default function Panel({
       </nav>
 
       <main className="admin-main">
-        {!storage.db ? (
+        {!storage.ready ? (
           <div className="admin-banner">
             <h3>Saving is not switched on yet</h3>
             <p>
               The site is running on its built-in wording, which is why everything below already
-              looks right. Nothing you save here will stick until the content database is
-              provisioned for this project.
+              looks right. Nothing you save here will stick until storage is connected.
             </p>
             <p>
-              Whoever set the site up needs to provision the <code>DB</code> (D1) and{' '}
-              <code>MEDIA</code> (R2) bindings named in <code>.openai/hosting.json</code>, then
-              redeploy. The public site keeps working normally in the meantime.
+              On Vercel that means adding a Blob store to the project so{' '}
+              <code>BLOB_READ_WRITE_TOKEN</code> is set; on Cloudflare it means provisioning the{' '}
+              <code>MEDIA</code> R2 bucket. Either way the public site keeps working normally in the
+              meantime.
             </p>
           </div>
         ) : null}
 
         {active === 'menus' ? (
-          <MenusPanel menus={menus} canUpload={storage.bucket} />
+          <MenusPanel menus={menus} canUpload={storage.ready} />
         ) : active === 'jobs' ? (
           <JobsPanel jobs={jobs} />
         ) : active === 'how-to' ? (

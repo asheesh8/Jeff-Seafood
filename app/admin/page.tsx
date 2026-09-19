@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './admin.css';
 import { isSignedIn } from '../lib/auth';
-import { getStorageStatus } from '../lib/db';
+import { getStorageStatus } from '../lib/store';
 import { loadContent, loadJobs, loadMenus } from '../lib/content';
 import { CONTENT_GROUPS } from '../lib/defaults';
 import SignIn from './sign-in';

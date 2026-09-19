@@ -80,7 +80,7 @@ export default function MenusPanel({ menus, canUpload }: { menus: MenuItem[]; ca
                 <h4>
                   {menu.title}
                   {menu.status === 'draft' ? <span className="admin-tag">Hidden</span> : null}
-                  {menu.fileKey ? (
+                  {menu.fileUrl ? (
                     <span className="admin-tag admin-tag-file">
                       {menu.fileType === 'application/pdf' ? 'PDF' : 'Photo'}
                     </span>
@@ -165,7 +165,7 @@ function MenuForm({
         <label htmlFor="menu-file">Menu file</label>
         <p className="admin-help">
           A photo or PDF of the menu, up to 10 MB.
-          {menu?.fileKey ? ' Leave this empty to keep the file already attached.' : ''}
+          {menu?.fileUrl ? ' Leave this empty to keep the file already attached.' : ''}
         </p>
         <input
           id="menu-file"
@@ -174,10 +174,10 @@ function MenuForm({
           accept="image/jpeg,image/png,image/webp,image/gif,image/avif,application/pdf"
           disabled={!canUpload}
         />
-        {menu?.fileKey ? (
+        {menu?.fileUrl ? (
           <p className="admin-help" style={{ marginTop: '0.45rem' }}>
             Currently attached:{' '}
-            <a href={`/uploads/${menu.fileKey}`} target="_blank" rel="noreferrer">
+            <a href={menu.fileUrl} target="_blank" rel="noreferrer">
               view the current file
             </a>
           </p>

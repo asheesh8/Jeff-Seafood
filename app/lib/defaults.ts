@@ -164,7 +164,7 @@ export type MenuItem = {
   id: string;
   title: string;
   blurb: string;
-  fileKey: string | null;
+  fileUrl: string | null;
   fileType: string | null;
   linkUrl: string | null;
   sortOrder: number;
@@ -173,12 +173,12 @@ export type MenuItem = {
 
 /** Shown until the owners add their own menus in /admin. */
 export const DEFAULT_MENUS: MenuItem[] = [
-  { id: 'lunch', title: 'Lunch', blurb: 'Seafood favorites, salads, sandwiches, pasta, and midday specials.', fileKey: null, fileType: null, linkUrl: null, sortOrder: 1, status: 'published' },
-  { id: 'dinner', title: 'Dinner', blurb: 'Fresh catch, steaks, chicken, pasta, and thoughtfully prepared entrées.', fileKey: null, fileType: null, linkUrl: null, sortOrder: 2, status: 'published' },
-  { id: 'dessert', title: 'Dessert', blurb: 'A sweet finish, from familiar classics to house selections.', fileKey: null, fileType: null, linkUrl: null, sortOrder: 3, status: 'published' },
-  { id: 'drinks', title: 'Drinks', blurb: 'Cocktails, local brews, and relaxed pours in the Lounge at Jeff’s.', fileKey: null, fileType: null, linkUrl: null, sortOrder: 4, status: 'published' },
-  { id: 'wine', title: 'Wine', blurb: 'Bottles and glasses selected to meet seafood, steak, and the moment.', fileKey: null, fileType: null, linkUrl: null, sortOrder: 5, status: 'published' },
-  { id: 'kids', title: 'Kids & platters', blurb: 'Choices for younger guests and seafood platters made for sharing.', fileKey: null, fileType: null, linkUrl: null, sortOrder: 6, status: 'published' },
+  { id: 'lunch', title: 'Lunch', blurb: 'Seafood favorites, salads, sandwiches, pasta, and midday specials.', fileUrl: null, fileType: null, linkUrl: null, sortOrder: 1, status: 'published' },
+  { id: 'dinner', title: 'Dinner', blurb: 'Fresh catch, steaks, chicken, pasta, and thoughtfully prepared entrées.', fileUrl: null, fileType: null, linkUrl: null, sortOrder: 2, status: 'published' },
+  { id: 'dessert', title: 'Dessert', blurb: 'A sweet finish, from familiar classics to house selections.', fileUrl: null, fileType: null, linkUrl: null, sortOrder: 3, status: 'published' },
+  { id: 'drinks', title: 'Drinks', blurb: 'Cocktails, local brews, and relaxed pours in the Lounge at Jeff’s.', fileUrl: null, fileType: null, linkUrl: null, sortOrder: 4, status: 'published' },
+  { id: 'wine', title: 'Wine', blurb: 'Bottles and glasses selected to meet seafood, steak, and the moment.', fileUrl: null, fileType: null, linkUrl: null, sortOrder: 5, status: 'published' },
+  { id: 'kids', title: 'Kids & platters', blurb: 'Choices for younger guests and seafood platters made for sharing.', fileUrl: null, fileType: null, linkUrl: null, sortOrder: 6, status: 'published' },
 ];
 
 export type JobItem = {
