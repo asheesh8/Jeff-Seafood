@@ -26,25 +26,18 @@ defaults, and `/admin` explains what is missing. Nothing breaks in the meantime.
 
 ## The admin password
 
-Out of the box the panel accepts a **demo password: `YUMJEFFSEAFOOD`**, so it is
-usable the moment the site deploys, with nothing to configure.
-
-That password is in this repository's source, and the repository is public — so
-it is public knowledge, and anyone who finds `/admin` can edit the site. It also
-signs the session cookie, so knowing it is enough to forge a session. Fine for
-showing the panel to the client; not fine once the site is real.
-
-**To replace it**, add an environment variable on the hosting project and
-redeploy:
+The panel stays locked until a password is configured. There is no built-in
+default, because anything committed here is public. Add these environment
+variables on the hosting project and redeploy:
 
 | Name | Value |
 | --- | --- |
 | `ADMIN_PASSWORD` | a long passphrase |
 | `ADMIN_SESSION_SECRET` | any long random string (optional) |
 
-Setting `ADMIN_PASSWORD` takes over completely: the demo password stops working,
-every existing session is invalidated (the cookie signing key changes with it),
-and the warning banner inside the panel disappears. No code change needed.
+Until `ADMIN_PASSWORD` is set, signing in at `/admin` says no password is
+configured. Changing it later invalidates every existing session, because the
+cookie signing key changes with it.
 
 Skipping the session secret is fine — cookies are then signed with the password
 instead, which is why changing the password signs everyone out.
